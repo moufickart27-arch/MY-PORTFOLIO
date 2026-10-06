@@ -430,9 +430,11 @@ button, input, textarea { font: inherit; }
 }
 .motion-card {
   position: relative;
+  width: 100%;
   aspect-ratio: 16 / 9;
-  min-height: 260px;
+  min-height: clamp(220px, 38vw, 260px);
   overflow: hidden;
+  isolation: isolate;
   border-radius: 6px;
   background: #000;
 }
@@ -445,6 +447,7 @@ button, input, textarea { font: inherit; }
 .motion-card::after {
   content: "";
   position: absolute;
+  z-index: 1;
   inset: auto 0 0;
   height: 30%;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
@@ -453,19 +456,20 @@ button, input, textarea { font: inherit; }
 .mc-left,
 .mc-right {
   position: absolute;
-  bottom: 10px;
+  bottom: clamp(6px, 1.5vw, 10px);
   z-index: 2;
   display: flex;
   gap: 6px;
   align-items: center;
+  pointer-events: none;
 }
 .mc-left {
-  left: 10px;
+  left: clamp(6px, 1.5vw, 10px);
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
 }
-.mc-right { right: 10px; }
+.mc-right { right: clamp(6px, 1.5vw, 10px); }
 .mc-btn {
   width: 30px;
   height: 30px;
@@ -477,6 +481,11 @@ button, input, textarea { font: inherit; }
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
   cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 1;
+  visibility: visible;
 }
 .mc-btn:hover { background: #c9a24b; color: #000; }
 .mc-btn svg {
@@ -492,11 +501,51 @@ button, input, textarea { font: inherit; }
 .mc-btn.muted .on { display: none; }
 .mc-btn.muted .off { display: block; }
 .mc-title {
+  max-width: 14ch;
+  overflow: hidden;
   color: #fff;
   font-size: 0.72rem;
+  text-overflow: ellipsis;
   text-shadow: 0 1px 3px #000;
+  white-space: nowrap;
 }
 .motion-card:fullscreen video { object-fit: contain; }
+
+@media (max-width: 620px) {
+  .motion-card {
+    min-height: clamp(210px, 62vw, 260px);
+  }
+
+  .mc-left,
+  .mc-right {
+    gap: 4px;
+  }
+
+  .mc-btn {
+    width: 38px;
+    height: 38px;
+    background: rgba(0, 0, 0, 0.68);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  }
+
+  .mc-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .mc-title {
+    max-width: 10ch;
+    font-size: 0.64rem;
+  }
+}
+
+@media (hover: none) and (max-width: 620px) {
+  .motion-card .mc-btn {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 .work-card::after {
   content: "";
   position: absolute;
