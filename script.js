@@ -113,7 +113,8 @@ function initPortfolioTabs(){
     tab.addEventListener('click', () => applyFilter(tab.dataset.filter));
   });
 
-  applyFilter('gallery');
+  const defaultTab = tabs.find(t => t.classList.contains('is-active')) || tabs[0];
+  applyFilter(defaultTab.dataset.filter);
 }
 
 // Connect editable work cards to the project lightbox
