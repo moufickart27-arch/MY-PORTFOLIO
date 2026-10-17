@@ -1223,12 +1223,11 @@ body:not(.portfolio-page) {
   z-index: 100000;
   display: inline-flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.7rem 1.3rem;
+  padding: 0.75rem 1.3rem;
   background: rgba(23, 20, 18, 0.95);
   color: #fff;
   border: 1px solid rgba(224, 122, 95, 0.6);
-  border-radius: 999px;
+  border-radius: 20px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -1236,7 +1235,10 @@ body:not(.portfolio-page) {
   transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   opacity: 0;
   pointer-events: none;
-  max-width: min(540px, calc(100vw - 2rem));
+  width: max-content;
+  max-width: min(560px, calc(100vw - 2rem));
+  box-sizing: border-box;
+  height: auto;
 }
 
 .network-offline-banner.is-visible {
@@ -1254,6 +1256,8 @@ body:not(.portfolio-page) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .nob-dot {
@@ -1291,25 +1295,50 @@ body:not(.portfolio-page) {
 
 .nob-text {
   display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.55rem;
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .nob-title {
   font-weight: 600;
   letter-spacing: 0.01em;
+  color: #fff;
+  flex-shrink: 0;
 }
 
 .nob-desc {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 
-@media (max-width: 580px) {
-  .nob-desc { display: none; }
+@media (max-width: 600px) {
   .network-offline-banner {
-    padding: 0.6rem 1.05rem;
-    font-size: 0.78rem;
+    top: 1rem;
+    padding: 0.75rem 1.1rem;
+    max-width: calc(100vw - 1.5rem);
+    border-radius: 16px;
+  }
+  .nob-content {
+    gap: 0.65rem;
+  }
+  .nob-text {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+  .nob-title {
+    font-size: 0.82rem;
+  }
+  .nob-desc {
+    font-size: 0.75rem;
+    line-height: 1.35;
   }
 }
