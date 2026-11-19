@@ -134,14 +134,18 @@ function initVideoCards(){
     });
   };
 
+  const hasHover = window.matchMedia('(hover: hover)').matches;
+
   videos.forEach(video => {
-    video.parentElement.addEventListener('mouseenter', () => {
-      video.play().catch(() => {});
-    });
-    video.parentElement.addEventListener('mouseleave', () => {
-      video.pause();
-      video.currentTime = 0;
-    });
+    if(hasHover){
+      video.parentElement.addEventListener('mouseenter', () => {
+        video.play().catch(() => {});
+      });
+      video.parentElement.addEventListener('mouseleave', () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    }
 
     const card = video.closest('.motion-card');
     if(!card) return;
