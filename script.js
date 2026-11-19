@@ -145,6 +145,17 @@ function initVideoCards(){
         video.pause();
         video.currentTime = 0;
       });
+    } else {
+      // On touch devices, tap the video to toggle play/pause
+      video.addEventListener('click', e => {
+        // Don't toggle if the tap was on a control button
+        if(e.target.closest('.mc-btn, .mc-dl')) return;
+        if(video.paused){
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
     }
 
     const card = video.closest('.motion-card');
@@ -216,7 +227,7 @@ function initVideoCards(){
           entry.target.pause();
         }
       });
-    }, { threshold: 0.6 });
+    }, { threshold: 0.3 });
 
     videos.forEach(video => observer.observe(video));
   }
