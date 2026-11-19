@@ -1612,3 +1612,5 @@ body:not(.portfolio-page) {
     line-height: 1.35;
   }
 }
+/* Featured crawler hidden for now. Delete these two lines to bring it back */
+.future-tray { display: none !important; }

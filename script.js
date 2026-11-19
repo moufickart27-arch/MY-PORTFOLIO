@@ -223,12 +223,25 @@ function initPortfolioTabs(){
   const cards = [...document.querySelectorAll('.gallery-card')];
   if(!tabs.length || !cards.length) return;
 
+  // The featured works crawler only appears on the Graphic Design tab
+  const crawlTray = document.querySelector('.future-tray');
+  const CRAWL_TAB = 'graphic design';
+
   const applyFilter = filter => {
     tabs.forEach(tab => {
       const active = tab.dataset.filter === filter;
       tab.classList.toggle('is-active', active);
       tab.setAttribute('aria-selected', String(active));
     });
+
+    if(crawlTray){
+      const showCrawl = filter === CRAWL_TAB;
+      crawlTray.hidden = !showCrawl;
+      crawlTray.style.display = showCrawl ? '' : 'none';
+      if(showCrawl && typeof window.resetFutureCrawl === 'function'){
+        window.resetFutureCrawl();
+      }
+    }
 
     cards.forEach(card => {
       const isVisible = filter === 'all' || card.dataset.category === filter;
@@ -537,6 +550,14 @@ function initFutureCrawl(){
   requestAnimationFrame(setupInitialOffset);
   window.addEventListener('resize', normalizeScroll, { passive: true });
 
+  // Called when the Graphic Design tab shows the crawler again (a hidden element loses its scroll position)
+  window.resetFutureCrawl = () => {
+    requestAnimationFrame(() => {
+      const groupWidth = getGroupWidth();
+      if(groupWidth > 0) viewport.scrollLeft = groupWidth;
+    });
+  };
+
   const pauseAutoCrawl = () => {
     isInteracting = true;
     if(resumeTimer) clearTimeout(resumeTimer);
@@ -556,7 +577,7 @@ function initFutureCrawl(){
       const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
       lastTimestamp = timestamp;
 
-      if(!isInteracting && dt > 0){
+      if(!isInteracting && dt > 0 && !tray.hidden){
         accumulatedScroll += SPEED_PX_PER_SEC * dt;
         if(accumulatedScroll >= 0.5){
           viewport.scrollLeft += accumulatedScroll;
