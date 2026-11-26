@@ -11,6 +11,9 @@
 
 <div class="shell">
   <button class="sidebar__toggle" aria-label="Toggle menu">☰</button>
+  <div class="topbar">
+    <a href="index.html" class="topbar__logo" aria-label="Moufick Art, go to home page">Moufick Art</a>
+  </div>
   <aside class="sidebar">
     <div>
       <a href="index.html" class="sidebar__logo">Moufick<br>Art</a>
@@ -32,7 +35,7 @@
 
   <main class="main">
     <header class="grid-header portfolio-header">
-      <p class="eyebrow">WORK</p>
+      <h1 class="work-title">WORK</h1>
       <div class="portfolio-tabs" role="tablist" aria-label="Portfolio categories">
         <button class="portfolio-tab is-active" type="button" data-filter="graphic design" aria-selected="true">GRAPHIC DESIGN</button>
         <button class="portfolio-tab" type="button" data-filter="branding" aria-selected="false">BRANDING</button>
@@ -43,231 +46,12 @@
       </div>
     </header>
 
-    <!-- ===== FEATURED WORKS CRAWL TRAY PANEL ===== -->
-    <section class="future-tray" aria-label="Featured works showcase">
-      <div class="future-tray__header">
-        <div class="future-tray__lead">
-          <span class="future-tray__pulse" aria-hidden="true"></span>
-          <span class="future-tray__eyebrow">FEATURED WORKS</span>
-        </div>
-
-      </div>
-
-      <div class="crawl-viewport" tabindex="0" role="region" aria-label="Featured works horizontal crawl preview">
-        <div class="crawl-track">
-          <!-- CRAWL GROUP 1 -->
-          <div class="crawl-group" aria-hidden="false">
-            <article class="crawl-card" data-title="Ice Cream Brand Identity" data-category="Brand Identity &amp; Packaging" data-description="Playful dessert visual identity, color systems, and bespoke retail packaging for an artisanal creamery." data-image="Ice Cream.jpg">
-              <button type="button" class="crawl-card__btn" aria-label="View Ice Cream Brand Identity project preview">
-                <div class="crawl-card__media">
-                  <img src="bIRTHdAY fLYER 2.jpg" alt="Ice Cream Brand Identity preview" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Brand Identity &amp; Packaging</span>
-                  <h3 class="crawl-card__title">Ice Cream Brand</h3>
-                  <p class="crawl-card__desc">Bespoke identity &amp; retail packaging system</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Room 12B Exhibition" data-category="Editorial &amp; Poster Design" data-description="Atmospheric interior composition, architectural perspective, and typographic exploration for visual branding." data-image="rOOM 12B.jpg">
-              <button type="button" class="crawl-card__btn" aria-label="View Room 12B Exhibition project preview">
-                <div class="crawl-card__media">
-                  <img src="rOOM 12B.jpg" alt="Room 12B Exhibition preview" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Editorial &amp; Poster</span>
-                  <h3 class="crawl-card__title">Room 12B</h3>
-                  <p class="crawl-card__desc">Atmospheric perspective &amp; typography study</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Baby Portrait Study" data-category="Portrait Drawing" data-description="High-fidelity graphite and digital portrait study capturing soft emotional realism and tonal nuance." data-image="Baby .jpg">
-              <button type="button" class="crawl-card__btn" aria-label="View Baby Portrait Study project preview">
-                <div class="crawl-card__media">
-                  <img src="Baby .jpg" alt="Baby Portrait Study preview" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Portrait Drawing</span>
-                  <h3 class="crawl-card__title">Baby Portrait Study</h3>
-                  <p class="crawl-card__desc">Fine art graphite &amp; digital likeness</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="OT General Assembly" data-category="Print &amp; Banner Campaign" data-description="Executive keynote visuals, conference staging identity, and large-format promotional summit banners." data-image="OT general meeting__.jpg">
-              <button type="button" class="crawl-card__btn" aria-label="View OT General Assembly project preview">
-                <div class="crawl-card__media">
-                  <img src="OT general meeting__.jpg" alt="OT General Assembly banner design preview" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Print &amp; Banner Design</span>
-                  <h3 class="crawl-card__title">OT General Assembly</h3>
-                  <p class="crawl-card__desc">Executive keynote &amp; conference campaign</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Creative Summit Vol. II" data-category="Visual Communication" data-description="Dynamic multi-platform flyer series designed for high-engagement community leadership summits and cultural meets." data-image="OT general meeting_ c.jpg">
-              <button type="button" class="crawl-card__btn" aria-label="View Creative Summit Vol. II project preview">
-                <div class="crawl-card__media">
-                  <img src="OT general meeting_ c.jpg" alt="Creative Summit Vol. II flyer design preview" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Visual Communication</span>
-                  <h3 class="crawl-card__title">Creative Summit Vol. II</h3>
-                  <p class="crawl-card__desc">Multi-platform community leadership flyers</p>
-                </div>
-              </button>
-            </article>
-          </div>
-
-          <!-- CRAWL GROUP 2 (Duplicate for continuous loop) -->
-          <div class="crawl-group" aria-hidden="true">
-            <article class="crawl-card" data-title="Ice Cream Brand Identity" data-category="Brand Identity &amp; Packaging" data-description="Playful dessert visual identity, color systems, and bespoke retail packaging for an artisanal creamery." data-image="Ice Cream.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Ice Cream Brand Identity project preview">
-                <div class="crawl-card__media">
-                  <img src="Ice Cream.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Brand Identity &amp; Packaging</span>
-                  <h3 class="crawl-card__title">Ice Cream Brand</h3>
-                  <p class="crawl-card__desc">Bespoke identity &amp; retail packaging system</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Room 12B Exhibition" data-category="Editorial &amp; Poster Design" data-description="Atmospheric interior composition, architectural perspective, and typographic exploration for visual branding." data-image="rOOM 12B.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Room 12B Exhibition project preview">
-                <div class="crawl-card__media">
-                  <img src="rOOM 12B.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Editorial &amp; Poster</span>
-                  <h3 class="crawl-card__title">Room 12B</h3>
-                  <p class="crawl-card__desc">Atmospheric perspective &amp; typography study</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Baby Portrait Study" data-category="Portrait Drawing" data-description="High-fidelity graphite and digital portrait study capturing soft emotional realism and tonal nuance." data-image="Baby .jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Baby Portrait Study project preview">
-                <div class="crawl-card__media">
-                  <img src="Baby .jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Portrait Drawing</span>
-                  <h3 class="crawl-card__title">Baby Portrait Study</h3>
-                  <p class="crawl-card__desc">Fine art graphite &amp; digital likeness</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="OT General Assembly" data-category="Print &amp; Banner Campaign" data-description="Executive keynote visuals, conference staging identity, and large-format promotional summit banners." data-image="OT general meeting__.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View OT General Assembly project preview">
-                <div class="crawl-card__media">
-                  <img src="OT general meeting__.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Print &amp; Banner Design</span>
-                  <h3 class="crawl-card__title">OT General Assembly</h3>
-                  <p class="crawl-card__desc">Executive keynote &amp; conference campaign</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Creative Summit Vol. II" data-category="Visual Communication" data-description="Dynamic multi-platform flyer series designed for high-engagement community leadership summits and cultural meets." data-image="OT general meeting_ c.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Creative Summit Vol. II project preview">
-                <div class="crawl-card__media">
-                  <img src="OT general meeting_ c.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Visual Communication</span>
-                  <h3 class="crawl-card__title">Creative Summit Vol. II</h3>
-                  <p class="crawl-card__desc">Multi-platform community leadership flyers</p>
-                </div>
-              </button>
-            </article>
-          </div>
-
-          <!-- CRAWL GROUP 3 (Triplicate for continuous 360-degree loop) -->
-          <div class="crawl-group" aria-hidden="true">
-            <article class="crawl-card" data-title="Ice Cream Brand Identity" data-category="Brand Identity &amp; Packaging" data-description="Playful dessert visual identity, color systems, and bespoke retail packaging for an artisanal creamery." data-image="Ice Cream.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Ice Cream Brand Identity project preview">
-                <div class="crawl-card__media">
-                  <img src="Ice Cream.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Brand Identity &amp; Packaging</span>
-                  <h3 class="crawl-card__title">Ice Cream Brand</h3>
-                  <p class="crawl-card__desc">Bespoke identity &amp; retail packaging system</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Room 12B Exhibition" data-category="Editorial &amp; Poster Design" data-description="Atmospheric interior composition, architectural perspective, and typographic exploration for visual branding." data-image="rOOM 12B.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Room 12B Exhibition project preview">
-                <div class="crawl-card__media">
-                  <img src="rOOM 12B.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Editorial &amp; Poster</span>
-                  <h3 class="crawl-card__title">Room 12B</h3>
-                  <p class="crawl-card__desc"></p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Baby Portrait Study" data-category="Portrait Drawing" data-description="High-fidelity graphite and digital portrait study capturing soft emotional realism and tonal nuance." data-image="Baby .jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Baby Portrait Study project preview">
-                <div class="crawl-card__media">
-                  <img src="Baby .jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Portrait Drawing</span>
-                  <h3 class="crawl-card__title">Baby Portrait Study</h3>
-                  <p class="crawl-card__desc">Fine art graphite &amp; digital likeness</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="OT General Assembly" data-category="Print &amp; Banner Campaign" data-description="Executive keynote visuals, conference staging identity, and large-format promotional summit banners." data-image="OT general meeting__.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View OT General Assembly project preview">
-                <div class="crawl-card__media">
-                  <img src="OT general meeting__.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Print &amp; Banner Design</span>
-                  <h3 class="crawl-card__title">OT General Assembly</h3>
-                  <p class="crawl-card__desc">Executive keynote &amp; conference campaign</p>
-                </div>
-              </button>
-            </article>
-
-            <article class="crawl-card" data-title="Creative Summit Vol. II" data-category="Visual Communication" data-description="Dynamic multi-platform flyer series designed for high-engagement community leadership summits and cultural meets." data-image="OT general meeting_ c.jpg">
-              <button type="button" class="crawl-card__btn" tabindex="-1" aria-label="View Creative Summit Vol. II project preview">
-                <div class="crawl-card__media">
-                  <img src="OT general meeting_ c.jpg" alt="" decoding="async">
-                </div>
-                <div class="crawl-card__info">
-                  <span class="crawl-card__category">Visual Communication</span>
-                  <h3 class="crawl-card__title">Creative Summit Vol. II</h3>
-                  <p class="crawl-card__desc">Multi-platform community leadership flyers</p>
-                </div>
-              </button>
-            </article>
-          </div>
-        </div>
-      </div>
-    </section>
-
 <!-- ===== GRAPHIC DESIGN ===== -->
 
     <section class="work-grid" aria-live="polite">
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Head Sliced project">
-          <img class="work-card__image" src="SLICE HEAD EFFECT.jpg" alt="Head Sliced branding project" loading="lazy">
+          <img class="work-card__image" src="SLICE HEAD EFFECT.jpg" alt="Head Sliced branding project" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Brand Identity</span>
             <span class="name">Head Sliced <small>01</small></span>
@@ -278,18 +62,18 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Welcome Back to Campus project">
-          <img class="work-card__image" src="Welcome.jpg" alt="Welcome Back to Campus Flyer" loading="lazy">
+          <img class="work-card__image" src="Welcome.jpg" alt="Welcome Back to Campus Flyer" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Welcome Back to Campus <small>02</small></span>
-            <span class="description"></span>
+            <span class="description">A vibrant flyer campaign for a university event.</span>
           </div>
         </button>
       </article>
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Lost ID project">
-          <img class="work-card__image" src="LOSt iD__.jpg" alt="Lost ID poster design project" loading="lazy">
+          <img class="work-card__image" src="LOSt iD__.jpg" alt="Lost ID poster design project" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Poster Design</span>
             <span class="name">Lost ID <small>03</small></span>
@@ -300,7 +84,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Visitation project">
-          <img class="work-card__image" src="mEMBERS vISITATIONS__.jpg" alt="Visitation print flyer project" loading="lazy">
+          <img class="work-card__image" src="mEMBERS vISITATIONS__.jpg" alt="Visitation print flyer project" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Visitation <small>04</small></span>
@@ -311,7 +95,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Safe Journey Design project">
-          <img class="work-card__image" src="sAFE jOURNEY FLy .jpg" alt="Safe Journey Design flyer project" loading="lazy">
+          <img class="work-card__image" src="sAFE jOURNEY FLy .jpg" alt="Safe Journey Design flyer project" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Safe Journey Design <small>05</small></span>
@@ -322,7 +106,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Oguaa Fresh project">
-          <img class="work-card__image" src="oGUAA fRESH.jpg" alt="Oguaa Fresh signboard design" loading="lazy">
+          <img class="work-card__image" src="oGUAA fRESH.jpg" alt="Oguaa Fresh signboard design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Signboard Design</span>
             <span class="name">Oguaa Fresh <small>06</small></span>
@@ -333,7 +117,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Yumm Bakery project">
-          <img class="work-card__image" src="YB.jpg" alt="Yumm Bakery poster design" loading="lazy">
+          <img class="work-card__image" src="YB.jpg" alt="Yumm Bakery poster design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Poster Design</span>
             <span class="name">Yumm Bakery <small>07</small></span>
@@ -344,7 +128,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Food Flyer project">
-          <img class="work-card__image" src="Chef Flyer.jpg" alt="Food flyer design" loading="lazy">
+          <img class="work-card__image" src="Chef Flyer.jpg" alt="Food flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Food Flyer <small>08</small></span>
@@ -355,7 +139,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View VOTEC project">
-          <img class="work-card__image" src="votech1.jpg" alt="VOTEC poster design" loading="lazy">
+          <img class="work-card__image" src="votech1.jpg" alt="VOTEC poster design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Poster Design</span>
             <span class="name">VOTEC <small>09</small></span>
@@ -366,7 +150,7 @@
 
        <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Citation project">
-          <img class="work-card__image" src="CITATION .jpg" alt="Citation poster design" loading="lazy">
+          <img class="work-card__image" src="CITATION .jpg" alt="Citation poster design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Design</span>
             <span class="name">Citation <small>10</small></span>
@@ -377,7 +161,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Bills Bank project">
-          <img class="work-card__image" src="BILLS FLYER.jpg" alt="Bills Bank flyer design" loading="lazy">
+          <img class="work-card__image" src="BILLS FLYER.jpg" alt="Bills Bank flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Bills Bank <small>11</small></span>
@@ -388,7 +172,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Online Product project">
-          <img class="work-card__image" src="oNLINE pRODUCT.jpg" alt="Online Product poster design" loading="lazy">
+          <img class="work-card__image" src="oNLINE pRODUCT.jpg" alt="Online Product poster design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Poster Design</span>
             <span class="name">Online Product <small>12</small></span>
@@ -399,7 +183,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View OT Executives project">
-          <img class="work-card__image" src="oT eXECUTIVES.jpg" alt="OT Executives flyer design" loading="lazy">
+          <img class="work-card__image" src="oT eXECUTIVES.jpg" alt="OT Executives flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">OT Executives <small>13</small></span>
@@ -410,7 +194,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Baidens Collection project">
-          <img class="work-card__image" src="Baidens collec.jpg" alt="Baidens Collection flyer design" loading="lazy">
+          <img class="work-card__image" src="Baidens collec.jpg" alt="Baidens Collection flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Baidens Collection <small>14</small></span>
@@ -421,7 +205,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View OT Banner project">
-          <img class="work-card__image" src="bANNER Ot copy.jpg" alt="OT Banner design" loading="lazy">
+          <img class="work-card__image" src="bANNER Ot copy.jpg" alt="OT Banner design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Banner Design</span>
             <span class="name">OT Banner <small>15</small></span>
@@ -432,7 +216,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Cut Head effect project">
-          <img class="work-card__image" src="Body Edit.jpg" alt="Cut Head effect" loading="lazy">
+          <img class="work-card__image" src="Body Edit.jpg" alt="Cut Head effect" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Editing</span>
             <span class="name">Cut Head effect <small>16</small></span>
@@ -443,7 +227,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Friendship Poster project">
-          <img class="work-card__image" src="fRIENDSHIP POSTER.jpg " alt="Friendship Poster design" loading="lazy">
+          <img class="work-card__image" src="fRIENDSHIP POSTER.jpg " alt="Friendship Poster design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Poster Design</span>
             <span class="name">Friendship Poster <small>21</small></span>
@@ -454,7 +238,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View AfroBase Poster project">
-          <img class="work-card__image" src="Afro Base Poster.jpg " alt="AfroBase Poster design" loading="lazy">
+          <img class="work-card__image" src="Afro Base Poster.jpg " alt="AfroBase Poster design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Poster Design</span>
             <span class="name">AfroBase Poster <small>22</small></span>
@@ -465,7 +249,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View AfroBase Menu flyer project">
-          <img class="work-card__image" src="Menu .jpg" alt="AfroBase Menu Flyer design" loading="lazy">
+          <img class="work-card__image" src="Menu .jpg" alt="AfroBase Menu Flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">AfroBase Menu <small>23</small></span>
@@ -476,7 +260,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Corn Flakes flyer project">
-          <img class="work-card__image" src="cORN fLAKES_.jpg" alt="Corn Flakes Flyer design" loading="lazy">
+          <img class="work-card__image" src="cORN fLAKES_.jpg" alt="Corn Flakes Flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Corn Flakes <small>24</small></span>
@@ -487,7 +271,7 @@
       
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View birthday flyer project">
-          <img class="work-card__image" src="bIRTHdAY fLYER 2.jpg " alt="Corn Flakes Flyer design" loading="lazy">
+          <img class="work-card__image" src="bIRTHdAY fLYER 2.jpg " alt="Corn Flakes Flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Birthday Flyer <small>25</small></span>
@@ -498,7 +282,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View Citation design project">
-          <img class="work-card__image" src=" oT cITATIONz 3.jpg" alt="Corn Flakes Flyer design" loading="lazy">
+          <img class="work-card__image" src=" oT cITATIONz 3.jpg" alt="Corn Flakes Flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Citation Design<small>26</small></span>
@@ -509,7 +293,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View birthday flyer project">
-          <img class="work-card__image" src="oT cITATIONz.jpg " alt="Corn Flakes Flyer design" loading="lazy">
+          <img class="work-card__image" src="oT cITATIONz.jpg " alt="Corn Flakes Flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Citation Design<small>27</small></span>
@@ -520,7 +304,7 @@
 
       <article class="gallery-card" data-category="graphic design">
         <button class="work-card" type="button" aria-label="View  citation design project">
-          <img class="work-card__image" src="oT cITATIONz 2.jpg" alt="Corn Flakes Flyer design" loading="lazy">
+          <img class="work-card__image" src="oT cITATIONz 2.jpg" alt="Corn Flakes Flyer design" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Flyer Design</span>
             <span class="name">Citation Design<small>28</small></span>
@@ -537,7 +321,7 @@
  
       <article class="gallery-card" data-category="illustration">
         <button class="work-card" type="button" aria-label="View coming soon project">
-          <img class="work-card__image" src="Self Cartoon.jpg " alt="Coming Soon" loading="lazy">
+          <img class="work-card__image" src="Self Cartoon.jpg " alt="Coming Soon" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Cartoon Vector Illustration</span>
             <span class="name"> <small>01</small></span>
@@ -548,7 +332,7 @@
 
       <article class="gallery-card" data-category="illustration">
         <button class="work-card" type="button" aria-label="View coming soon project">
-          <img class="work-card__image" src="Teddy Bear Horror.jpg " alt="Coming Soon" loading="lazy">
+          <img class="work-card__image" src="Teddy Bear Horror.jpg " alt="Coming Soon" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Illustration</span>
             <span class="name">Coming Soon <small>02</small></span>
@@ -557,12 +341,24 @@
         </button>
       </article>
 
+      <article class="gallery-card" data-category="illustration">
+        <button class="work-card" type="button" aria-label="View coming soon project">
+          <img class="work-card__image" src=" " alt="Coming Soon" loading="lazy" decoding="async">
+          <div class="work-card__label">
+            <span class="cat">Illustration</span>
+            <span class="name">Coming Soon <small>03</small></span>
+            <span class="description">Coming soon...</span>
+          </div>
+        </button>
+      </article>
+
+
 
 <!-- ===== PORTRAIT DRAWING ===== -->
 
       <article class="gallery-card" data-category="portrait drawing">
         <button class="work-card" type="button" aria-label="View cute boy project">
-          <img class="work-card__image" src="Cute Boy.jpg " alt="The cute boy portrait" loading="lazy">
+          <img class="work-card__image" src="Cute Boy.jpg " alt="The cute boy portrait" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Portrait Drawing</span>
             <span class="name">The Cute Boy <small>1</small></span>
@@ -573,7 +369,7 @@
 
       <article class="gallery-card" data-category="portrait drawing">
         <button class="work-card" type="button" aria-label="View Self Portrait project">
-          <img class="work-card__image" src="Self portrait.jpg " alt="Self Portrait" loading="lazy">
+          <img class="work-card__image" src="Self portrait.jpg " alt="Self Portrait" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Portrait Drawing</span>
             <span class="name">Self Portrait <small>2</small></span>
@@ -582,7 +378,49 @@
         </button>
       </article>
 
-      
+      <article class="gallery-card" data-category="portrait drawing">
+        <button class="work-card" type="button" aria-label="View Creative Frame project">
+          <img class="work-card__image" src=" " alt="Coming Soon" loading="lazy" decoding="async">
+          <div class="work-card__label">
+            <span class="cat">Portrait Drawing</span>
+            <span class="name">Creative Frame <small>3</small></span>
+            <span class="description">An editorial style composition shaping visual narrative.</span>
+          </div>
+        </button>
+      </article>
+
+      <article class="gallery-card" data-category="portrait drawing">
+        <button class="work-card" type="button" aria-label="View Product Story project">
+          <img class="work-card__image" src=" " alt="Coming Soon" loading="lazy" decoding="async">
+          <div class="work-card__label">
+            <span class="cat">Portrait Drawing</span>
+            <span class="name">Product Story <small>4</small></span>
+            <span class="description">Commercial imagery designed to make an object feel premium.</span>
+          </div>
+        </button>
+      </article>
+
+      <article class="gallery-card" data-category="portrait drawing">
+        <button class="work-card" type="button" aria-label="View Event Story project">
+          <img class="work-card__image" src=" " alt="Coming Soon" loading="lazy" decoding="async">
+          <div class="work-card__label">
+            <span class="cat">Portrait Drawing</span>
+            <span class="name">Event Story <small>5</small></span>
+            <span class="description">Visual storytelling for special events and occasions.</span>
+          </div>
+        </button>
+      </article>
+
+      <article class="gallery-card" data-category="portrait drawing">
+        <button class="work-card" type="button" aria-label="View Product Story project">
+          <img class="work-card__image" src=" " alt="Coming Soon" loading="lazy" decoding="async">
+          <div class="work-card__label">
+            <span class="cat">Portrait Drawing</span>
+            <span class="name">Product Story <small>6</small></span>
+            <span class="description">Commercial imagery designed to make an object feel premium.</span>
+          </div>
+        </button>
+      </article>
 
       <!-- ===== MOTION GRAPHICS ===== -->
 
@@ -664,37 +502,11 @@
         </div>
       </article>
 
-      <article class="gallery-card" data-category="motion">
-        <div class="motion-card" data-title="Jujotu Motion Graphic">
-          <video src="jUJOTU.mp4" muted loop playsinline preload="metadata"></video>
-
-          <div class="mc-left">
-            <button class="mc-btn mc-sound muted" type="button" aria-label="Toggle sound" aria-pressed="false">
-              <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
-              <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>
-            </button>
-            <span class="mc-title">Simple Motion Graphic</span>
-          </div>
-
-          <div class="mc-right">
-            <button class="mc-btn mc-max" type="button" aria-label="Full screen">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
-            </button>
-            <button class="mc-btn mc-share" type="button" aria-label="Share">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
-            </button>
-            <a class="mc-btn mc-dl" aria-label="Download" href="jUJOTU.mp4" download="Jujotu Motion Graphic.mp4">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
-            </a>
-          </div>
-        </div>
-      </article>
-
       <!-- ===== PHOTOGRAPHY ===== -->
 
       <article class="gallery-card" data-category="photography">
         <button class="work-card" type="button" aria-label="View Photography project">
-          <img class="work-card__image" src="wALKERsCOTT.jpg" alt="Shot of Walker Scott" loading="lazy">
+          <img class="work-card__image" src="wALKERsCOTT.jpg" alt="Shot of Walker Scott" loading="lazy" decoding="async">
           <div class="work-card__label">
             <span class="cat">Photography</span>
             <span class="name">Walker Scott</span>
@@ -703,8 +515,17 @@
         </button>
       </article>
     </section>
+
+    <div class="load-more" hidden>
+      <p class="load-more__status" aria-live="polite"></p>
+      <button class="load-more__btn" type="button">Load more</button>
+    </div>
   </main>
 </div>
+
+<button class="back-to-top" type="button" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 
 <dialog class="lightbox" aria-labelledby="lightboxTitle" aria-describedby="lightboxDescription">
   <button class="lightbox__close" type="button" aria-label="Close image viewer">&times;</button>

@@ -134,29 +134,14 @@ function initVideoCards(){
     });
   };
 
-  const hasHover = window.matchMedia('(hover: hover)').matches;
-
   videos.forEach(video => {
-    if(hasHover){
-      video.parentElement.addEventListener('mouseenter', () => {
-        video.play().catch(() => {});
-      });
-      video.parentElement.addEventListener('mouseleave', () => {
-        video.pause();
-        video.currentTime = 0;
-      });
-    } else {
-      // On touch devices, tap the video to toggle play/pause
-      video.addEventListener('click', e => {
-        // Don't toggle if the tap was on a control button
-        if(e.target.closest('.mc-btn, .mc-dl')) return;
-        if(video.paused){
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-      });
-    }
+    video.parentElement.addEventListener('mouseenter', () => {
+      video.play().catch(() => {});
+    });
+    video.parentElement.addEventListener('mouseleave', () => {
+      video.pause();
+      video.currentTime = 0;
+    });
 
     const card = video.closest('.motion-card');
     if(!card) return;
@@ -227,7 +212,7 @@ function initVideoCards(){
           entry.target.pause();
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.6 });
 
     videos.forEach(video => observer.observe(video));
   }
@@ -238,43 +223,61 @@ function initPortfolioTabs(){
   const cards = [...document.querySelectorAll('.gallery-card')];
   if(!tabs.length || !cards.length) return;
 
-  // The featured works crawler only appears on the Graphic Design tab
-  const crawlTray = document.querySelector('.future-tray');
-  const CRAWL_TAB = 'graphic design';
+  const BATCH_SIZE = 12; // how many projects show at a time
+  const loadMore = document.querySelector('.load-more');
+  const loadMoreButton = loadMore ? loadMore.querySelector('.load-more__btn') : null;
+  const loadMoreStatus = loadMore ? loadMore.querySelector('.load-more__status') : null;
 
-  const applyFilter = filter => {
+  let currentFilter = 'all';
+  let shownCount = BATCH_SIZE;
+
+  const getMatching = () => cards.filter(card => currentFilter === 'all' || card.dataset.category === currentFilter);
+
+  // Show the first `shownCount` projects of the current filter and hide the rest
+  const render = () => {
+    const matching = getMatching();
+    const shown = new Set(matching.slice(0, shownCount));
+    cards.forEach(card => {
+      const isVisible = shown.has(card);
+      card.hidden = !isVisible;
+      card.style.display = isVisible ? '' : 'none';
+    });
+    if(loadMore){
+      loadMore.hidden = matching.length <= shown.size;
+      if(loadMoreStatus) loadMoreStatus.textContent = `Showing ${shown.size} of ${matching.length}`;
+    }
+  };
+
+  const applyFilter = (filter, options = {}) => {
+    currentFilter = filter;
+    shownCount = BATCH_SIZE;
     tabs.forEach(tab => {
       const active = tab.dataset.filter === filter;
       tab.classList.toggle('is-active', active);
       tab.setAttribute('aria-selected', String(active));
-    });
-
-    if(crawlTray){
-      const showCrawl = filter === CRAWL_TAB;
-      crawlTray.hidden = !showCrawl;
-      crawlTray.style.display = showCrawl ? '' : 'none';
-      if(showCrawl && typeof window.resetFutureCrawl === 'function'){
-        window.resetFutureCrawl();
+      if(active && options.scrollTab && typeof tab.scrollIntoView === 'function'){
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        tab.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', inline: 'nearest', block: 'nearest' });
       }
-    }
-
-    cards.forEach(card => {
-      const isVisible = filter === 'all' || card.dataset.category === filter;
-      card.hidden = !isVisible;
-      card.style.display = isVisible ? '' : 'none';
     });
-
-    const visibleCards = cards.filter(card => !card.hidden);
-    const visibleWorkCards = visibleCards.map(card => card.querySelector('.work-card')).filter(Boolean);
-    const lightbox = document.querySelector('.lightbox');
-    if(lightbox && typeof window.updateWorkCards === 'function') {
-      window.updateWorkCards(visibleWorkCards);
-    }
+    render();
   };
 
   tabs.forEach(tab => {
-    tab.addEventListener('click', () => applyFilter(tab.dataset.filter));
+    tab.addEventListener('click', () => applyFilter(tab.dataset.filter, { scrollTab: true }));
   });
+
+  if(loadMoreButton){
+    loadMoreButton.addEventListener('click', () => {
+      const firstNewIndex = shownCount;
+      shownCount += BATCH_SIZE;
+      render();
+      // Move keyboard focus to the first new project without jumping the page
+      const firstNew = getMatching()[firstNewIndex];
+      const target = firstNew ? firstNew.querySelector('button, a') : null;
+      if(target) target.focus({ preventScroll: true });
+    });
+  }
 
   const defaultTab = tabs.find(t => t.classList.contains('is-active')) || tabs[0];
   applyFilter(defaultTab.dataset.filter);
@@ -376,28 +379,6 @@ function renderWorkGrid(){
     }
   });
 
-  window.updateWorkCards = updatedCards => {
-    const nextCards = updatedCards.length ? updatedCards : workCards;
-    const cardsToBind = nextCards.filter(Boolean);
-    // Rebind only when the filter changed; this keeps the project lightbox stable.
-    cardsToBind.forEach((card, index) => {
-      card.onclick = null;
-      card.addEventListener('click', () => {
-        const visibleCards = nextCards.filter(Boolean);
-        const selectedIndex = visibleCards.indexOf(card);
-        if(selectedIndex < 0) return;
-        lastFocusedCard = card;
-        const project = getProject(card);
-        lightboxImage.src = project.image;
-        lightboxImage.alt = project.alt;
-        lightboxCategory.textContent = project.category;
-        lightboxTitle.textContent = project.title;
-        lightboxDescription.textContent = project.description;
-        lightbox.setAttribute('aria-label', `${project.title} project viewer`);
-        lightbox.showModal();
-      });
-    });
-  };
 }
 
 // Populate a project detail page from ?p=slug
@@ -512,195 +493,32 @@ function initConnectivityMonitor(){
   }
 }
 
-// Connect future works crawl cards to horizontal auto-crawl, touch/drag swiping, and lightbox
-function initFutureCrawl(){
-  const tray = document.querySelector('.future-tray');
-  const viewport = document.querySelector('.crawl-viewport');
-  const track = document.querySelector('.crawl-track');
-  const groups = document.querySelectorAll('.crawl-group');
-  const lightbox = document.querySelector('.lightbox');
-  if(!tray || !viewport || !track || !groups.length) return;
+// Back to top button: appears after scrolling down
+function initBackToTop(){
+  const button = document.querySelector('.back-to-top');
+  if(!button) return;
 
-  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SHOW_AFTER = 400; // pixels scrolled before the button appears
+  let ticking = false;
 
-  // Disable pure CSS marquee so our unified JS auto-crawl & touch engine takes over seamlessly
-  if(!prefersReduced){
-    track.style.animation = 'none';
-  }
-
-  let isInteracting = false;
-  let isPointerDown = false;
-  let startX = 0;
-  let scrollStartX = 0;
-  let hasDragged = false;
-  let resumeTimer = null;
-  let lastTimestamp = 0;
-  let accumulatedScroll = 0;
-  const SPEED_PX_PER_SEC = 38; // Elegant reading pace
-
-  const getGroupWidth = () => {
-    const firstGroup = groups[0];
-    return firstGroup ? firstGroup.getBoundingClientRect().width : 0;
+  const update = () => {
+    ticking = false;
+    button.classList.toggle('is-visible', window.scrollY > SHOW_AFTER);
   };
 
-  // Seamless wrap: keeps scrollLeft safely centered around group 1 and group 2
-  const normalizeScroll = () => {
-    const groupWidth = getGroupWidth();
-    if(groupWidth <= 0) return;
-
-    if(viewport.scrollLeft >= groupWidth * 2){
-      viewport.scrollLeft -= groupWidth;
-    } else if(viewport.scrollLeft <= 5){
-      viewport.scrollLeft += groupWidth;
+  window.addEventListener('scroll', () => {
+    if(!ticking){
+      ticking = true;
+      requestAnimationFrame(update);
     }
-  };
+  }, { passive: true });
 
-  // Start with offset equal to group 1 so user can swipe backwards immediately
-  const setupInitialOffset = () => {
-    const groupWidth = getGroupWidth();
-    if(groupWidth > 0 && viewport.scrollLeft === 0){
-      viewport.scrollLeft = groupWidth;
-    }
-  };
-  requestAnimationFrame(setupInitialOffset);
-  window.addEventListener('resize', normalizeScroll, { passive: true });
-
-  // Called when the Graphic Design tab shows the crawler again (a hidden element loses its scroll position)
-  window.resetFutureCrawl = () => {
-    requestAnimationFrame(() => {
-      const groupWidth = getGroupWidth();
-      if(groupWidth > 0) viewport.scrollLeft = groupWidth;
-    });
-  };
-
-  const pauseAutoCrawl = () => {
-    isInteracting = true;
-    if(resumeTimer) clearTimeout(resumeTimer);
-  };
-
-  const scheduleResume = (delay = 1400) => {
-    if(resumeTimer) clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(() => {
-      isInteracting = false;
-    }, delay);
-  };
-
-  // Continuous 60/120fps auto-scroll loop
-  if(!prefersReduced){
-    const step = (timestamp) => {
-      if(!lastTimestamp) lastTimestamp = timestamp;
-      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
-      lastTimestamp = timestamp;
-
-      if(!isInteracting && dt > 0 && !tray.hidden){
-        accumulatedScroll += SPEED_PX_PER_SEC * dt;
-        if(accumulatedScroll >= 0.5){
-          viewport.scrollLeft += accumulatedScroll;
-          accumulatedScroll = 0;
-          normalizeScroll();
-        }
-      }
-
-      requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
-  // Desktop hover pause
-  tray.addEventListener('mouseenter', () => {
-    if(window.matchMedia('(hover: hover)').matches){
-      pauseAutoCrawl();
-    }
-  });
-  tray.addEventListener('mouseleave', () => {
-    if(!isPointerDown && window.matchMedia('(hover: hover)').matches){
-      scheduleResume(200);
-    }
+  button.addEventListener('click', () => {
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   });
 
-  // Touch and pointer drag gestures (works on mobile, tablet & desktop drag)
-  viewport.addEventListener('pointerdown', e => {
-    if(e.button !== 0 && e.pointerType === 'mouse') return;
-    isPointerDown = true;
-    hasDragged = false;
-    startX = e.clientX;
-    scrollStartX = viewport.scrollLeft;
-    pauseAutoCrawl();
-    viewport.classList.add('is-dragging');
-  });
-
-  window.addEventListener('pointermove', e => {
-    if(!isPointerDown) return;
-    const deltaX = e.clientX - startX;
-    if(Math.abs(deltaX) > 6){
-      hasDragged = true;
-    }
-    viewport.scrollLeft = scrollStartX - deltaX;
-    normalizeScroll();
-  }, { passive: true });
-
-  const handlePointerEnd = () => {
-    if(!isPointerDown) return;
-    isPointerDown = false;
-    viewport.classList.remove('is-dragging');
-    scheduleResume(1400);
-  };
-
-  window.addEventListener('pointerup', handlePointerEnd);
-  window.addEventListener('pointercancel', handlePointerEnd);
-
-  // Native mobile touch events
-  viewport.addEventListener('touchstart', () => {
-    pauseAutoCrawl();
-  }, { passive: true });
-
-  viewport.addEventListener('scroll', () => {
-    normalizeScroll();
-  }, { passive: true });
-
-  viewport.addEventListener('touchend', () => {
-    scheduleResume(1400);
-  }, { passive: true });
-
-  // Lightbox click integration (only activates on tap, not after a swipe/drag)
-  const crawlCards = [...document.querySelectorAll('.crawl-card')];
-  if(lightbox){
-    const lightboxImage = lightbox.querySelector('.lightbox__image');
-    const lightboxCategory = lightbox.querySelector('.lightbox__category');
-    const lightboxTitle = lightbox.querySelector('.lightbox__title');
-    const lightboxDescription = lightbox.querySelector('.lightbox__description');
-
-    crawlCards.forEach(card => {
-      const btn = card.querySelector('.crawl-card__btn');
-      if(!btn) return;
-
-      btn.addEventListener('click', e => {
-        if(hasDragged){
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-
-        const title = card.dataset.title || '';
-        const category = card.dataset.category || 'Featured Work';
-        const description = card.dataset.description || '';
-        const imageSrc = card.dataset.image || card.querySelector('img')?.src || '';
-
-        if(lightboxImage) {
-          lightboxImage.src = imageSrc;
-          lightboxImage.alt = title;
-        }
-        if(lightboxCategory) lightboxCategory.textContent = category;
-        if(lightboxTitle) lightboxTitle.textContent = title;
-        if(lightboxDescription) lightboxDescription.textContent = description;
-        lightbox.setAttribute('aria-label', `${title} featured project viewer`);
-
-        if(typeof lightbox.showModal === 'function') {
-          lightbox.showModal();
-        }
-      });
-    });
-  }
+  update();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -709,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
   markActiveNav();
   initVideoCards();
   initPortfolioTabs();
+  initBackToTop();
   renderWorkGrid();
-  initFutureCrawl();
   renderProject();
 });
