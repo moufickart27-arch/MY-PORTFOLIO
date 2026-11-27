@@ -25,197 +25,297 @@ function markActiveNav(){
   });
 }
 
+// Motion graphics: custom video player.
+// Play / pause, time, seek, mute, full screen, and a three-dot menu with Download and Share.
 function initVideoCards(){
-  const videos = [...document.querySelectorAll('.video-card video, .motion-card video')];
-  if(!videos.length) return;
+  const cards = [...document.querySelectorAll('.motion-card')];
+  if(!cards.length) return;
 
-  const MAX_PATH = 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5';
-  const MIN_PATH = 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5';
+  const IDLE_DELAY = 2600; // controls fade out this long after the last touch while a video plays
+  const videos = cards.map(card => card.querySelector('video')).filter(Boolean);
 
-  const isFullscreen = (card, video) => {
-    return !!(
-      document.fullscreenElement === card ||
-      document.webkitFullscreenElement === card ||
-      document.mozFullScreenElement === card ||
-      document.msFullscreenElement === card ||
-      card.classList.contains('is-fullscreen') ||
-      video?.webkitDisplayingFullscreen
-    );
+  const formatTime = seconds => {
+    const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+    return `${Math.floor(safe / 60)}:${String(Math.floor(safe % 60)).padStart(2, '0')}`;
   };
 
-  const updateButtonState = (maxBtn, inFullscreen) => {
-    if(!maxBtn) return;
-    maxBtn.classList.toggle('is-fullscreen', inFullscreen);
-    maxBtn.setAttribute('aria-label', inFullscreen ? 'Exit full screen' : 'Full screen');
-    maxBtn.setAttribute('title', inFullscreen ? 'Exit full screen' : 'Full screen');
-    const path = maxBtn.querySelector('svg path');
-    if(path){
-      path.setAttribute('d', inFullscreen ? MIN_PATH : MAX_PATH);
-    }
-  };
+  const currentFullscreen = () => document.fullscreenElement || document.webkitFullscreenElement || null;
 
-  const exitFullscreen = (card, video, maxBtn) => {
-    if(card.classList.contains('is-fullscreen')){
-      card.classList.remove('is-fullscreen');
-      document.body.classList.remove('has-fullscreen-card');
-    }
-    if(document.exitFullscreen){
-      document.exitFullscreen().catch(() => {});
-    } else if(document.webkitExitFullscreen){
-      document.webkitExitFullscreen().catch(() => {});
-    } else if(document.mozCancelFullScreen){
-      document.mozCancelFullScreen().catch(() => {});
-    } else if(document.msExitFullscreen){
-      document.msExitFullscreen().catch(() => {});
-    }
-    if(video && typeof video.webkitExitFullscreen === 'function'){
-      try { video.webkitExitFullscreen(); } catch(e) {}
-    }
-    updateButtonState(maxBtn, false);
-  };
+  cards.forEach(card => {
+    const video = card.querySelector('video');
+    const playButton = card.querySelector('.mc-play');
+    const muteButton = card.querySelector('.mc-mute');
+    const fullscreenButton = card.querySelector('.mc-fs');
+    const moreButton = card.querySelector('.mc-more');
+    const menu = card.querySelector('.mc-menu');
+    const shareItem = card.querySelector('.mc-share');
+    const seek = card.querySelector('.mc-seek');
+    const timeLabel = card.querySelector('.mc-time');
+    const toast = card.querySelector('.mc-toast');
+    if(!video || !playButton || !muteButton || !fullscreenButton || !moreButton || !menu || !seek || !timeLabel) return;
 
-  const fallbackFullscreen = (card, video, maxBtn) => {
-    // Fallback that makes the viewer fill the screen with position: fixed; inset: 0; width: 100dvw; height: 100dvh
-    card.classList.add('is-fullscreen');
-    document.body.classList.add('has-fullscreen-card');
-    updateButtonState(maxBtn, true);
-  };
+    let idleTimer = 0;
+    let toastTimer = 0;
+    let frame = 0;
+    let scrubbing = false;
+    let wasIdle = false;
+    let menuWasOpen = false;
 
-  const enterFullscreen = (card, video, maxBtn) => {
-    if(video && !video.paused){
-      video.play().catch(() => {});
-    }
+    const isPlaying = () => !video.paused && !video.ended;
+    const isFullscreen = () => currentFullscreen() === card;
 
-    const requestFS = card.requestFullscreen ||
-                      card.webkitRequestFullscreen ||
-                      card.mozRequestFullScreen ||
-                      card.msRequestFullscreen;
+    // ----- Showing the current state
+    const render = () => {
+      const duration = Number.isFinite(video.duration) ? video.duration : 0;
+      const current = video.currentTime || 0;
+      const ratio = duration ? Math.min(current / duration, 1) : 0;
 
-    if(requestFS){
-      const res = requestFS.call(card);
-      if(res && typeof res.catch === 'function'){
-        res.then(() => {
-          updateButtonState(maxBtn, true);
-        }).catch(() => {
-          fallbackFullscreen(card, video, maxBtn);
-        });
-      } else {
-        updateButtonState(maxBtn, true);
+      timeLabel.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+      if(!scrubbing){
+        seek.value = String(Math.round(ratio * 1000));
+        seek.style.setProperty('--p', `${ratio * 100}%`);
       }
-    } else {
-      fallbackFullscreen(card, video, maxBtn);
-    }
-  };
+      seek.setAttribute('aria-valuetext', `${formatTime(current)} of ${formatTime(duration)}`);
 
-  const toggleFullscreen = (card, video, maxBtn) => {
-    if(isFullscreen(card, video)){
-      exitFullscreen(card, video, maxBtn);
-    } else {
-      enterFullscreen(card, video, maxBtn);
-    }
-  };
+      const playing = isPlaying();
+      card.classList.toggle('is-playing', playing);
+      playButton.setAttribute('aria-label', playing ? 'Pause' : 'Play');
 
-  // Helper to reliably handle mobile touch (touchend) and desktop click without double-firing
-  const bindTap = (element, handler) => {
-    if(!element) return;
-    let lastTouch = 0;
-    element.addEventListener('touchend', e => {
-      lastTouch = Date.now();
-      e.preventDefault();
-      handler(e);
-    }, { passive: false });
+      const muted = video.muted || video.volume === 0;
+      card.classList.toggle('is-muted', muted);
+      muteButton.setAttribute('aria-label', muted ? 'Unmute' : 'Mute');
+    };
 
-    element.addEventListener('click', e => {
-      if(Date.now() - lastTouch < 500){
-        e.preventDefault();
+    // Smooth progress while playing
+    const tick = () => {
+      render();
+      frame = isPlaying() ? requestAnimationFrame(tick) : 0;
+    };
+
+    // ----- Controls fade out while playing, and come back on touch / mouse move
+    const keyboardFocusInside = () => {
+      try {
+        return !!card.querySelector('.mc-controls :focus-visible, .mc-menu :focus-visible');
+      } catch (error) {
+        return false;
+      }
+    };
+    const canHide = () => isPlaying() && menu.hidden && !scrubbing && !keyboardFocusInside();
+    const hideNow = () => { if(canHide()) card.classList.add('is-idle'); };
+    const showControls = () => {
+      card.classList.remove('is-idle');
+      clearTimeout(idleTimer);
+      if(canHide()) idleTimer = setTimeout(hideNow, IDLE_DELAY);
+    };
+
+    // ----- Actions
+    const togglePlay = () => {
+      if(video.paused || video.ended){
+        const result = video.play();
+        if(result && typeof result.catch === 'function') result.catch(() => {});
+      } else {
+        video.pause();
+      }
+    };
+
+    const toggleMute = () => {
+      if(video.muted || video.volume === 0){
+        video.muted = false;
+        if(video.volume === 0) video.volume = 1;
+      } else {
+        video.muted = true;
+      }
+    };
+
+    const enterVideoFullscreen = () => {
+      // iPhone: only the video itself can go full screen (the phone's own player takes over)
+      if(typeof video.webkitEnterFullscreen === 'function'){
+        try { video.webkitEnterFullscreen(); } catch (error) {}
+      }
+    };
+
+    const toggleFullscreen = () => {
+      if(isFullscreen()){
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if(exit){
+          const result = exit.call(document);
+          if(result && typeof result.catch === 'function') result.catch(() => {});
+        }
         return;
       }
-      handler(e);
+      const request = card.requestFullscreen || card.webkitRequestFullscreen;
+      if(request){
+        const result = request.call(card);
+        if(result && typeof result.catch === 'function') result.catch(enterVideoFullscreen);
+      } else {
+        enterVideoFullscreen();
+      }
+    };
+
+    const syncFullscreen = () => {
+      const active = isFullscreen();
+      card.classList.toggle('is-fullscreen', active);
+      fullscreenButton.setAttribute('aria-label', active ? 'Exit full screen' : 'Full screen');
+    };
+
+    // ----- Three-dot menu
+    const menuItems = () => [...menu.querySelectorAll('[role="menuitem"]')];
+
+    const openMenu = () => {
+      menu.hidden = false;
+      moreButton.setAttribute('aria-expanded', 'true');
+      card.classList.remove('is-idle');
+      clearTimeout(idleTimer);
+      const first = menuItems()[0];
+      if(first) first.focus();
+    };
+
+    const closeMenu = restoreFocus => {
+      if(menu.hidden) return;
+      menu.hidden = true;
+      moreButton.setAttribute('aria-expanded', 'false');
+      if(restoreFocus) moreButton.focus();
+      showControls();
+    };
+
+    const showToast = message => {
+      if(!toast) return;
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 1800);
+    };
+
+    // ----- Video events
+    video.addEventListener('play', () => {
+      // Only one video plays at a time
+      videos.forEach(other => { if(other !== video && !other.paused) other.pause(); });
+      if(!frame) frame = requestAnimationFrame(tick);
+      render();
+      showControls();
     });
-  };
-
-  videos.forEach(video => {
-    video.parentElement.addEventListener('mouseenter', () => {
-      video.play().catch(() => {});
-    });
-    video.parentElement.addEventListener('mouseleave', () => {
-      video.pause();
-      video.currentTime = 0;
+    ['pause', 'ended'].forEach(name => video.addEventListener(name, () => {
+      render();
+      showControls();
+    }));
+    ['loadedmetadata', 'durationchange', 'timeupdate', 'seeked', 'volumechange'].forEach(name => {
+      video.addEventListener(name, render);
     });
 
-    const card = video.closest('.motion-card');
-    if(!card) return;
+    // ----- Taps on the video itself
+    card.addEventListener('pointerdown', () => {
+      wasIdle = card.classList.contains('is-idle');
+      menuWasOpen = !menu.hidden;
+    }, true);
 
-    const soundButton = card.querySelector('.mc-sound');
-    if(soundButton){
-      bindTap(soundButton, () => {
-        video.muted = !video.muted;
-        soundButton.classList.toggle('muted', video.muted);
-        soundButton.setAttribute('aria-pressed', String(!video.muted));
-      });
-    }
+    video.addEventListener('click', () => {
+      // First tap only brings the controls back, or closes the menu. The next one plays / pauses.
+      if(menuWasOpen || wasIdle){
+        showControls();
+        return;
+      }
+      togglePlay();
+      showControls();
+    });
 
-    const maxBtn = card.querySelector('.mc-max');
-    if(maxBtn){
-      bindTap(maxBtn, () => {
-        toggleFullscreen(card, video, maxBtn);
-      });
-    }
+    card.addEventListener('pointermove', event => { if(event.pointerType === 'mouse') showControls(); });
+    card.addEventListener('pointerleave', event => {
+      if(event.pointerType === 'mouse' && canHide()){
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(hideNow, 700);
+      }
+    });
+    card.addEventListener('focusin', showControls);
 
-    const shareButton = card.querySelector('.mc-share');
-    if(shareButton){
-      bindTap(shareButton, async () => {
+    // ----- Buttons
+    playButton.addEventListener('click', () => { togglePlay(); showControls(); });
+    muteButton.addEventListener('click', () => { toggleMute(); showControls(); });
+    fullscreenButton.addEventListener('click', () => { toggleFullscreen(); showControls(); });
+
+    // ----- Seek bar
+    seek.addEventListener('pointerdown', () => { scrubbing = true; });
+    const endScrub = () => {
+      if(!scrubbing) return;
+      scrubbing = false;
+      render();
+      showControls();
+    };
+    window.addEventListener('pointerup', endScrub);
+    window.addEventListener('pointercancel', endScrub);
+    seek.addEventListener('input', () => {
+      const duration = video.duration;
+      if(!Number.isFinite(duration) || !duration) return;
+      const ratio = Number(seek.value) / 1000;
+      video.currentTime = ratio * duration;
+      seek.style.setProperty('--p', `${ratio * 100}%`);
+      render();
+      showControls();
+    });
+
+    // Arrow keys jump 5 seconds, like the browser's own player
+    seek.addEventListener('keydown', event => {
+      const jump = { ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5 }[event.key];
+      const duration = video.duration;
+      if(jump === undefined || !Number.isFinite(duration)) return;
+      event.preventDefault();
+      video.currentTime = Math.min(Math.max(video.currentTime + jump, 0), duration);
+      render();
+      showControls();
+    });
+
+    // ----- Menu behavior
+    moreButton.addEventListener('click', () => {
+      if(menu.hidden) openMenu(); else closeMenu(true);
+    });
+    document.addEventListener('pointerdown', event => {
+      if(!menu.hidden && !menu.contains(event.target) && !moreButton.contains(event.target)) closeMenu(false);
+    });
+    menu.addEventListener('click', event => {
+      if(event.target.closest('[role="menuitem"]')) closeMenu(event.detail === 0); // keep focus only for keyboard users
+    });
+    card.addEventListener('keydown', event => {
+      if(menu.hidden) return;
+      const list = menuItems();
+      const index = list.indexOf(document.activeElement);
+      if(event.key === 'Escape'){
+        event.preventDefault();
+        closeMenu(true);
+      } else if(event.key === 'ArrowDown' && list.length){
+        event.preventDefault();
+        list[(index + 1) % list.length].focus();
+      } else if(event.key === 'ArrowUp' && list.length){
+        event.preventDefault();
+        list[(index - 1 + list.length) % list.length].focus();
+      } else if(event.key === 'Tab'){
+        closeMenu(false);
+      }
+    });
+
+    if(shareItem){
+      shareItem.addEventListener('click', async () => {
+        const data = { title: card.dataset.title, url: location.href };
         try {
           if(navigator.share){
-            await navigator.share({ title: card.dataset.title, url: location.href });
-          } else {
+            await navigator.share(data);
+          } else if(navigator.clipboard && navigator.clipboard.writeText){
             await navigator.clipboard.writeText(location.href);
-            alert('Link copied');
+            showToast('Link copied');
+          } else {
+            window.prompt('Copy this link', location.href);
           }
-        } catch (error) {}
+        } catch (error) {
+          // The share sheet was closed, nothing to do
+        }
       });
     }
 
-    // Sync fullscreen button state if native fullscreen is closed via Esc or gesture
-    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
-      document.addEventListener(evt, () => {
-        const active = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-        if(active !== card && !card.classList.contains('is-fullscreen')){
-          updateButtonState(maxBtn, false);
-        } else if(active === card){
-          updateButtonState(maxBtn, true);
-        }
-      });
-    });
+    // ----- Full screen state (also when the user leaves with Esc or a swipe)
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    document.addEventListener('webkitfullscreenchange', syncFullscreen);
+    video.addEventListener('webkitendfullscreen', render);
 
-    video.addEventListener('webkitendfullscreen', () => {
-      updateButtonState(maxBtn, false);
-    });
+    render();
   });
-
-  document.addEventListener('keydown', e => {
-    if(e.key === 'Escape'){
-      document.querySelectorAll('.motion-card.is-fullscreen').forEach(card => {
-        const video = card.querySelector('video');
-        const maxBtn = card.querySelector('.mc-max');
-        exitFullscreen(card, video, maxBtn);
-      });
-    }
-  });
-
-  if(matchMedia('(hover: none)').matches && 'IntersectionObserver' in window){
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if(entry.isIntersecting){
-          entry.target.play().catch(() => {});
-        } else {
-          entry.target.pause();
-        }
-      });
-    }, { threshold: 0.6 });
-
-    videos.forEach(video => observer.observe(video));
-  }
 }
 
 function initPortfolioTabs(){
@@ -241,6 +341,9 @@ function initPortfolioTabs(){
       const isVisible = shown.has(card);
       card.hidden = !isVisible;
       card.style.display = isVisible ? '' : 'none';
+      if(!isVisible){
+        card.querySelectorAll('video').forEach(video => { if(!video.paused) video.pause(); });
+      }
     });
     if(loadMore){
       loadMore.hidden = matching.length <= shown.size;
@@ -290,9 +393,6 @@ function renderWorkGrid(){
   if(!workCards.length || !lightbox) return;
 
   const lightboxImage = lightbox.querySelector('.lightbox__image');
-  const lightboxCategory = lightbox.querySelector('.lightbox__category');
-  const lightboxTitle = lightbox.querySelector('.lightbox__title');
-  const lightboxDescription = lightbox.querySelector('.lightbox__description');
   const previousButton = lightbox.querySelector('.lightbox__prev');
   const nextButton = lightbox.querySelector('.lightbox__next');
   let currentIndex = 0;
@@ -304,9 +404,7 @@ function renderWorkGrid(){
       card,
       image: media?.tagName === 'VIDEO' ? media.poster : media?.currentSrc || media?.src || '',
       alt: media?.alt || media?.getAttribute('aria-label') || '',
-      category: card.querySelector('.cat')?.textContent.trim() || '',
-      title: card.querySelector('.name')?.childNodes[0]?.textContent.trim() || '',
-      description: card.querySelector('.description')?.textContent.trim() || ''
+      title: card.querySelector('.name')?.childNodes[0]?.textContent.trim() || ''
     };
   };
 
@@ -319,9 +417,6 @@ function renderWorkGrid(){
     const project = getProject(visibleCards[currentIndex]);
     lightboxImage.src = project.image;
     lightboxImage.alt = project.alt;
-    lightboxCategory.textContent = project.category;
-    lightboxTitle.textContent = project.title;
-    lightboxDescription.textContent = project.description;
     lightbox.setAttribute('aria-label', `${project.title} project viewer`);
   };
 
@@ -360,7 +455,8 @@ function renderWorkGrid(){
   nextButton?.addEventListener('click', showNext);
   lightbox.querySelector('.lightbox__close')?.addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', event => {
-    if(event.target === lightbox) closeLightbox();
+    // The dialog fills the screen, so a click on the empty area around the image closes it
+    if(event.target === lightbox || event.target.classList.contains('lightbox__content')) closeLightbox();
   });
   lightbox.addEventListener('cancel', () => {
     lightbox.close();
