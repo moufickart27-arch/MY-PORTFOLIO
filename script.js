@@ -25,6 +25,13 @@ function markActiveNav(){
   });
 }
 
+// Pause every Motion Graphics video. Used when switching category, leaving the page or closing a viewer.
+function pauseAllVideos(){
+  document.querySelectorAll('.motion-card video').forEach(video => {
+    if(!video.paused) video.pause();
+  });
+}
+
 // Motion graphics: custom video player.
 // Play / pause, time, seek, mute, full screen, and a three-dot menu with Download and Share.
 function initVideoCards(){
@@ -32,7 +39,24 @@ function initVideoCards(){
   if(!cards.length) return;
 
   const IDLE_DELAY = 2600; // controls fade out this long after the last touch while a video plays
+  const PLAY_INTENT_WINDOW = 3000; // a video may only start within this many ms of a visitor pressing play
+  const PAUSE_WHEN_VIEWER_CLOSES = true; // leaving full screen / the expanded player pauses the video
   const videos = cards.map(card => card.querySelector('video')).filter(Boolean);
+
+  // Videos never start by themselves: make sure nothing is set to autoplay and everything begins paused
+  videos.forEach(video => {
+    video.autoplay = false;
+    video.removeAttribute('autoplay');
+    video.setAttribute('webkit-playsinline', ''); // older iOS: play inside the page instead of jumping to the phone's player
+    if(!video.paused) video.pause();
+  });
+
+  // Leaving the page or switching to another app/tab pauses playback
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden && !document.pictureInPictureElement) pauseAllVideos();
+  });
+  window.addEventListener('pagehide', pauseAllVideos);
+  window.addEventListener('pageshow', event => { if(event.persisted) pauseAllVideos(); });
 
   const formatTime = seconds => {
     const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
@@ -55,6 +79,10 @@ function initVideoCards(){
     if(!video || !playButton || !muteButton || !fullscreenButton || !moreButton || !menu || !seek || !timeLabel) return;
 
     let idleTimer = 0;
+    let playIntent = 0;      // when the visitor last pressed play
+    let placeholder = null;  // keeps the card's spot in the page while it is expanded
+    let wasFullscreen = false;
+    let fullscreenAttempt = 0;
     let toastTimer = 0;
     let frame = 0;
     let scrubbing = false;
@@ -62,7 +90,10 @@ function initVideoCards(){
     let menuWasOpen = false;
 
     const isPlaying = () => !video.paused && !video.ended;
-    const isFullscreen = () => currentFullscreen() === card;
+    const isExpanded = () => card.classList.contains('is-expanded');
+    const isFullscreen = () => currentFullscreen() === card || isExpanded();
+    const allowPlay = () => { playIntent = Date.now(); };
+    const playAllowed = () => Date.now() - playIntent < PLAY_INTENT_WINDOW;
 
     // ----- Showing the current state
     const render = () => {
@@ -111,6 +142,7 @@ function initVideoCards(){
     // ----- Actions
     const togglePlay = () => {
       if(video.paused || video.ended){
+        allowPlay();
         const result = video.play();
         if(result && typeof result.catch === 'function') result.catch(() => {});
       } else {
@@ -127,15 +159,58 @@ function initVideoCards(){
       }
     };
 
-    const enterVideoFullscreen = () => {
-      // iPhone: only the video itself can go full screen (the phone's own player takes over)
-      if(typeof video.webkitEnterFullscreen === 'function'){
-        try { video.webkitEnterFullscreen(); } catch (error) {}
-      }
+    // Native full screen is used where the browser really supports it for a whole element
+    // (desktop, Android, iPad). iPhone Safari has no element full screen, so the player expands to fill the screen instead.
+    const nativeFullscreenAvailable = () => {
+      const request = card.requestFullscreen || card.webkitRequestFullscreen;
+      const enabled = document.fullscreenEnabled !== undefined ? document.fullscreenEnabled : document.webkitFullscreenEnabled;
+      return !!request && enabled !== false;
+    };
+
+    // After the player is moved in the page, a playing video can be paused by the browser: carry on where it was
+    const resumeIfNeeded = wasPlaying => {
+      if(!wasPlaying) return;
+      requestAnimationFrame(() => {
+        if(!video.paused) return;
+        allowPlay();
+        const result = video.play();
+        if(result && typeof result.catch === 'function') result.catch(() => {});
+      });
+    };
+
+    const expandCard = () => {
+      if(isExpanded()) return;
+      const wasPlaying = isPlaying();
+      // Move the player to <body>: its normal parent clips fixed-position content (overflow + backdrop blur)
+      placeholder = document.createElement('div');
+      placeholder.className = 'mc-placeholder';
+      placeholder.style.height = `${card.offsetHeight}px`;
+      card.parentNode.insertBefore(placeholder, card);
+      document.body.appendChild(card);
+      card.classList.add('is-expanded');
+      document.documentElement.classList.add('mc-expanded-open');
+      syncFullscreen();
+      resumeIfNeeded(wasPlaying);
+    };
+
+    const collapseCard = () => {
+      if(!isExpanded()) return;
+      const wasPlaying = isPlaying();
+      card.classList.remove('is-expanded');
+      document.documentElement.classList.remove('mc-expanded-open');
+      if(placeholder && placeholder.parentNode) placeholder.parentNode.replaceChild(card, placeholder);
+      placeholder = null;
+      syncFullscreen();
+      if(!PAUSE_WHEN_VIEWER_CLOSES) resumeIfNeeded(wasPlaying);
     };
 
     const toggleFullscreen = () => {
-      if(isFullscreen()){
+      fullscreenAttempt++;
+      if(isExpanded()){
+        collapseCard();
+        return;
+      }
+      if(currentFullscreen() === card){
         const exit = document.exitFullscreen || document.webkitExitFullscreen;
         if(exit){
           const result = exit.call(document);
@@ -143,20 +218,41 @@ function initVideoCards(){
         }
         return;
       }
-      const request = card.requestFullscreen || card.webkitRequestFullscreen;
-      if(request){
-        const result = request.call(card);
-        if(result && typeof result.catch === 'function') result.catch(enterVideoFullscreen);
-      } else {
-        enterVideoFullscreen();
+      if(!nativeFullscreenAvailable()){
+        expandCard();
+        return;
       }
+      const attempt = fullscreenAttempt;
+      const request = card.requestFullscreen || card.webkitRequestFullscreen;
+      try {
+        const result = request.call(card);
+        if(result && typeof result.catch === 'function') result.catch(() => { if(attempt === fullscreenAttempt) expandCard(); });
+      } catch (error) {
+        expandCard();
+        return;
+      }
+      // Some browsers neither refuse nor enter full screen: if nothing happened, use the expanded player
+      setTimeout(() => { if(attempt === fullscreenAttempt && !isFullscreen()) expandCard(); }, 800);
     };
 
     const syncFullscreen = () => {
       const active = isFullscreen();
       card.classList.toggle('is-fullscreen', active);
+      const holder = card.closest('.gallery-card');
+      if(holder) holder.classList.toggle('has-fullscreen', currentFullscreen() === card);
       fullscreenButton.setAttribute('aria-label', active ? 'Exit full screen' : 'Full screen');
+      // Closing the viewer pauses the video
+      if(wasFullscreen && !active && PAUSE_WHEN_VIEWER_CLOSES && !video.paused) video.pause();
+      wasFullscreen = active;
     };
+
+    // Esc closes the expanded player (native full screen already handles Esc itself)
+    document.addEventListener('keydown', event => {
+      if(event.key === 'Escape' && isExpanded() && !event.defaultPrevented){
+        event.preventDefault();
+        collapseCard();
+      }
+    });
 
     // ----- Three-dot menu
     const menuItems = () => [...menu.querySelectorAll('[role="menuitem"]')];
@@ -188,6 +284,12 @@ function initVideoCards(){
 
     // ----- Video events
     video.addEventListener('play', () => {
+      // Playback nobody asked for (not started from the player's own controls) is stopped straight away
+      const nativeViewer = document.pictureInPictureElement === video || video.webkitDisplayingFullscreen;
+      if(!playAllowed() && !nativeViewer){
+        video.pause();
+        return;
+      }
       // Only one video plays at a time
       videos.forEach(other => { if(other !== video && !other.paused) other.pause(); });
       if(!frame) frame = requestAnimationFrame(tick);
@@ -352,6 +454,8 @@ function initPortfolioTabs(){
   };
 
   const applyFilter = (filter, options = {}) => {
+    // Moving to another category never carries playback along
+    if(filter !== currentFilter) pauseAllVideos();
     currentFilter = filter;
     shownCount = BATCH_SIZE;
     tabs.forEach(tab => {
@@ -397,6 +501,8 @@ function renderWorkGrid(){
   const nextButton = lightbox.querySelector('.lightbox__next');
   let currentIndex = 0;
   let lastFocusedCard = null;
+  let usingFallback = false; // true when the browser has no <dialog>.showModal() (older iOS Safari)
+  const root = document.documentElement;
 
   const getProject = card => {
     const media = card.querySelector('img, video');
@@ -415,13 +521,51 @@ function renderWorkGrid(){
     if(!visibleCards.length) return;
     currentIndex = (index + visibleCards.length) % visibleCards.length;
     const project = getProject(visibleCards[currentIndex]);
+    // Large images can take a moment on a phone connection: show a small spinner until the picture is ready
+    if(lightboxImage.getAttribute('src') !== project.image) lightbox.classList.add('is-loading');
     lightboxImage.src = project.image;
     lightboxImage.alt = project.alt;
     lightbox.setAttribute('aria-label', `${project.title} project viewer`);
   };
 
+  const stopLoading = () => lightbox.classList.remove('is-loading');
+  lightboxImage.addEventListener('load', stopLoading);
+  lightboxImage.addEventListener('error', stopLoading);
+
+  const openDialog = () => {
+    root.classList.add('lightbox-open'); // stops the page behind from scrolling
+    if(typeof lightbox.showModal === 'function'){
+      try {
+        lightbox.showModal();
+        return;
+      } catch (error) {
+        // fall through to the manual version below
+      }
+    }
+    usingFallback = true;
+    lightbox.classList.add('is-fallback');
+    lightbox.setAttribute('open', '');
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+    const closeButton = lightbox.querySelector('.lightbox__close');
+    if(closeButton) closeButton.focus();
+  };
+
+  const finishClose = () => {
+    root.classList.remove('lightbox-open');
+    lightbox.classList.remove('is-fallback', 'is-loading');
+    if(lastFocusedCard) lastFocusedCard.focus({ preventScroll: true });
+  };
+
   const closeLightbox = () => {
-    if(lightbox.open) lightbox.close();
+    if(!lightbox.hasAttribute('open')) return;
+    if(usingFallback || typeof lightbox.close !== 'function'){
+      usingFallback = false;
+      lightbox.removeAttribute('open');
+      finishClose();
+    } else {
+      lightbox.close();
+    }
   };
 
   const openLightbox = index => {
@@ -430,7 +574,7 @@ function renderWorkGrid(){
     if(selectedIndex < 0) return;
     lastFocusedCard = workCards[index];
     showProject(selectedIndex);
-    lightbox.showModal();
+    openDialog();
   };
 
   const showNext = () => {
@@ -455,16 +599,47 @@ function renderWorkGrid(){
   nextButton?.addEventListener('click', showNext);
   lightbox.querySelector('.lightbox__close')?.addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', event => {
-    // The dialog fills the screen, so a click on the empty area around the image closes it
+    if(swiped){ // the end of a swipe is not a tap
+      swiped = false;
+      return;
+    }
+    // The dialog fills the screen, so a tap on the empty area around the image closes it
     if(event.target === lightbox || event.target.classList.contains('lightbox__content')) closeLightbox();
   });
   lightbox.addEventListener('cancel', () => {
     lightbox.close();
   });
-  lightbox.addEventListener('close', () => {
-    lastFocusedCard?.focus();
+  lightbox.addEventListener('close', finishClose);
+
+  // Swipe left / right to move between projects (works with touch, pen and mouse)
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  let swipeTracking = false;
+  let swiped = false;
+  lightbox.addEventListener('pointerdown', event => {
+    if(event.target.closest('button')) return;
+    swipeTracking = true;
+    swiped = false;
+    swipeStartX = event.clientX;
+    swipeStartY = event.clientY;
   });
+  lightbox.addEventListener('pointerup', event => {
+    if(!swipeTracking) return;
+    swipeTracking = false;
+    const dx = event.clientX - swipeStartX;
+    const dy = event.clientY - swipeStartY;
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5){
+      swiped = true;
+      if(dx < 0) showNext(); else showPrevious();
+    }
+  });
+  lightbox.addEventListener('pointercancel', () => { swipeTracking = false; });
+
   lightbox.addEventListener('keydown', event => {
+    if(event.key === 'Escape' && usingFallback){
+      event.preventDefault();
+      closeLightbox();
+    }
     if(event.key === 'ArrowLeft'){
       event.preventDefault();
       showPrevious();

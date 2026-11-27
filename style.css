@@ -463,6 +463,8 @@ button, input, textarea { font: inherit; }
   cursor: pointer;
   overflow: hidden;
   border-radius: 18px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .work-card__image {
   display: block;
@@ -707,22 +709,77 @@ button, input, textarea { font: inherit; }
   .mc-time { display: none; }
 }
 
-/* Full screen (the whole player goes full screen, so the controls stay) */
-.motion-card:fullscreen,
+/* Full screen (the whole player goes full screen, so the controls stay).
+   Each selector has its own rule: a browser that does not know one of them would drop a combined rule entirely. */
+.motion-card:fullscreen {
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
 .motion-card:-webkit-full-screen {
   width: 100%;
   height: 100%;
   background: #000;
 }
-.motion-card:fullscreen video,
+.motion-card:fullscreen video {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
 .motion-card:-webkit-full-screen video {
   width: 100%;
   height: 100%;
   aspect-ratio: auto;
 }
-.motion-card:fullscreen .mc-controls,
+.motion-card:fullscreen .mc-controls {
+  padding-bottom: calc(0.15rem + env(safe-area-inset-bottom, 0px));
+}
 .motion-card:-webkit-full-screen .mc-controls {
   padding-bottom: calc(0.15rem + env(safe-area-inset-bottom, 0px));
+}
+/* A blurred, clipped parent can hide a full screen child in Safari: switch both off while a player is full screen */
+.gallery-card.has-fullscreen {
+  overflow: visible;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Expanded player: used where the browser cannot make an element full screen (iPhone).
+   The player is moved to <body> by the script, so nothing clips it, and fills the screen. */
+.mc-placeholder {
+  width: 100%;
+  background: #000;
+}
+.motion-card.is-expanded {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  background: #000;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+.motion-card.is-expanded video {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+.motion-card.is-expanded .mc-title {
+  padding-top: calc(0.7rem + env(safe-area-inset-top, 0px));
+}
+.motion-card.is-expanded .mc-controls {
+  padding-bottom: calc(0.15rem + env(safe-area-inset-bottom, 0px));
+}
+html.mc-expanded-open,
+html.lightbox-open {
+  overflow: hidden;
 }
 
 .work-card::after {
@@ -765,10 +822,23 @@ button, input, textarea { font: inherit; }
   color: var(--ink-faint);
   vertical-align: middle;
 }
-.work-card:hover::after,
-.work-card:hover .work-card__label { opacity: 1; }
-.work-card:hover .work-card__label { transform: translateY(0); }
-.work-card:hover .work-card__image { transform: scale(1.04); }
+/* Hover reveals only on devices that can really hover. On phones and tablets a :hover that changes the page makes
+   iOS Safari use the first tap as a "hover" and swallow the click, so the image only opened on the second tap. */
+@media (hover: hover) and (pointer: fine) {
+  .work-card:hover::after,
+  .work-card:hover .work-card__label { opacity: 1; }
+  .work-card:hover .work-card__label { transform: translateY(0); }
+  .work-card:hover .work-card__image { transform: scale(1.04); }
+}
+/* Touch screens have no hover, so the name and category are always shown */
+@media (hover: none), (pointer: coarse) {
+  .work-card::after,
+  .work-card__label {
+    opacity: 1;
+    transition: none;
+  }
+  .work-card__label { transform: none; }
+}
 
 .project-top {
   display: flex;
@@ -987,11 +1057,15 @@ button, input, textarea { font: inherit; }
 
 /* ---------- IMAGE LIGHTBOX ----------
    Full-screen, no container: the artwork fills the space left by the controls. */
+.lightbox:not([open]) { display: none; } /* browsers without <dialog> would otherwise show it all the time */
 .lightbox {
   --lb-gutter: 5rem; /* room for the side arrows on large screens */
   --lb-edge: 1rem;
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
@@ -1006,8 +1080,31 @@ button, input, textarea { font: inherit; }
   color: #fff;
   overflow: hidden;
   overscroll-behavior: contain;
+  touch-action: none; /* swipes are handled by the script, the page behind never scrolls */
+  -webkit-tap-highlight-color: transparent;
 }
 .lightbox::backdrop { background: rgba(0,0,0,0.92); }
+/* Used only when the browser has no showModal(): the dialog paints its own backdrop and sits above everything */
+.lightbox.is-fallback {
+  z-index: 100001;
+  background: rgba(0,0,0,0.92);
+}
+/* Small spinner while a large image is still loading */
+.lightbox.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: lightbox-spin 0.8s linear infinite;
+  pointer-events: none;
+}
+@keyframes lightbox-spin { to { transform: rotate(360deg); } }
 .lightbox__content {
   position: absolute;
   top: calc(var(--lb-edge) + env(safe-area-inset-top, 0px));
